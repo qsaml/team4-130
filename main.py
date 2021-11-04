@@ -6,8 +6,8 @@ from SpotifyClient import SpotifyClient
 #     return url
 
 def run():
-    spotifyClient = SpotifyClient("BQAdiJ23_PY5yfPvS2AXq3Xm5jEOm17ClKjb4k9kGHEsIRbqAUTLkGZ8_p1HThpWafoAhPb03v3WEbE8abIRpYgK4P6UxziTz1eZpJ4JNkVboyQc5M2TqUtsFUyyVToRkIztAoJHi_iMQG83LI82Yyx9CmRmfX1P54POmSIupVULdUJ",
-                                  "BQCaXQgsRBbaqx9nfvGeZr80hJW3G3LJ8k")
+    spotifyClient = SpotifyClient(os.getenv('SPOTIFY_AUTH_TOKEN'),
+                                  os.getenv('SPOTIFY_USER_ID'))
     artist = input("Enter your favorite artist: ")
     tracks = spotifyClient.getTrack(artist)
     track_ids = [track['id'] for track in tracks]
