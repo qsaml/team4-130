@@ -1,0 +1,25 @@
+{
+  "name": "team4-130",
+  "version": "1.0.0",
+  "description": "shivani  \r sam",
+  "main": "index.js",
+  "dependencies": {
+    "react": "^17.0.2",
+    "save": "^2.4.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qsaml/team4-130.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/qsaml/team4-130/issues"
+  },
+  "homepage": "https://github.com/qsaml/team4-130#readme"
+}
