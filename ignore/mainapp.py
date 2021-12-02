@@ -72,7 +72,7 @@ def partition(list_song, start, end):
 ###api part
 
 #quicksort function
-def quickSort(list_Song, start, end):
+def quickSort(list_song, start, end):
 	if start<end:
 		p = partition(list_song, start, end)  #partition at index at aspecific point
 		#sorting elemns before and after partition
@@ -81,7 +81,7 @@ def quickSort(list_Song, start, end):
 
 def get_sorted_songs(list_song):
 	res = []
-	ordered_Song=Stack()
+	ordered_song=Stack()
 	for song in list_song:
 		ordered_song.push(song)
 	for i, x in enumerate(list_Song):
@@ -100,7 +100,7 @@ def sort_shuffle(list_song):
 		rand_index=random.randint(0,end)
 		print(rand_index)
 
-		if added_Recently.checek_recent(list_song[rand_index][0].name_singer):
+		if added_recently.check_recent(list_song[rand_index][0].name_singer):
 			increment_count=increment_count +1
 			pass
 		else:
@@ -134,8 +134,8 @@ def table_generate(list_song):
 		items.append(Item(song[1].title_song, song[0].name_singer))
 
 	#populating the table
-	table = ItemTable(items)
-	
+	table = ObjTable(items)
+
 	return table
 
 def parse_multi_form(form):
@@ -201,7 +201,7 @@ sorted_songs = list_info.copy()
 shuffled = list_info.copy()
 
 end=len(sorted_songs)-1
-quickSort(sorted_Songs, 0, end)
+quickSort(sorted_songs, 0, end)
 
 shuffled = shuffle_sort(shuffled)
 
@@ -215,13 +215,12 @@ result.append(table_shuffled)
 return result
 
 
-
 @app.route('/result',methods = ['POST', 'GET'])
 def result():
    if request.method == 'POST':
       result = parse_multi_form(request.form)
       return render_template("result.html",result = result)
-	  
+
 if __name__ == '__main__':
    app.run(debug = True)
 
