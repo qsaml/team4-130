@@ -446,3 +446,207 @@ void key64to48(unsigned int key[])
         }
     }
 }
+
+void Encryption(long int plain[])
+{
+    out = fopen("2.txt", "ab+");
+    for (int i = 0; i < 64; i++) {
+        initialPermutation(i, plain[i]);
+    }
+ 
+    for (int i = 0; i < 32; i++) {
+        LEFT[0][i] = IPtext[i];
+    }
+ 
+    for (int i = 32; i < 64; i++) {
+        RIGHT[0][i - 32] = IPtext[i];
+    }
+ 
+    for (int k = 1; k < 17; k++)
+    {
+        cipher(k, 0);
+ 
+        for (int i = 0; i < 32; i++) {
+            LEFT[k][i] = RIGHT[k - 1][i];
+        }
+    }
+ 
+    for (int i = 0; i < 64; i++)
+    {
+        if (i < 32) {
+            CIPHER[i] = RIGHT[16][i];
+        }
+        else {
+            CIPHER[i] = LEFT[16][i - 32];
+        }
+        finalPermutation(i, CIPHER[i]);
+    }
+ 
+    for (int i = 0; i < 64; i++) {
+        fprintf(out, "%d", ENCRYPTED[i]);
+    }
+ 
+    fclose(out);
+}
+ 
+void Decryption(long int plain[])
+{
+    out = fopen("1.txt", "ab+");
+    for (int i = 0; i < 64; i++) {
+        initialPermutation(i, plain[i]);
+    }
+ 
+    for (int i = 0; i < 32; i++) {
+        LEFT[0][i] = IPtext[i];
+    }
+ 
+    for (int i = 32; i < 64; i++) {
+        RIGHT[0][i - 32] = IPtext[i];
+    }
+ 
+    for (int k = 1; k < 17; k++)
+    {
+        cipher(k, 1);
+ 
+        for (int i = 0; i < 32; i++) {
+            LEFT[k][i] = RIGHT[k - 1][i];
+        }
+    }
+ 
+    for (int i = 0; i < 64; i++)
+    {
+        if (i < 32) {
+            CIPHER[i] = RIGHT[16][i];
+        }
+        else {
+            CIPHER[i] = LEFT[16][i - 32];
+        }
+        finalPermutation(i, CIPHER[i]);
+    }
+ 
+    for (int i = 0; i < 64; i++) {
+        fprintf(out, "%d", ENCRYPTED[i]);
+    }
+ 
+    fclose(out);
+}
+ 
+void decrypt(long int n, char *str)
+{
+    // destroy contents of these files (from previous runs)
+    FILE *out = fopen("1.txt", "wb+");
+    fclose(out);
+ 
+    out = fopen("result.txt", "wb+");
+    fclose(out);
+ 
+    FILE *in = fopen(str, "rb");
+    long int plain[n * 64];
+    int i = -1;
+    char ch;
+ 
+    while (!feof(in))
+    {
+        ch = getc(in);
+        plain[++i] = ch - 48;
+    }
+ 
+    for (int i = 0; i < n; i++)
+    {
+        Decryption(plain + i * 64);
+        bittochar();
+    }
+ 
+    fclose(in);
+}
+ 
+void encrypt(long int n, char *str)
+{
+    // destroy contents of this file (from previous runs)
+    FILE *out = fopen("2.txt", "wb+");
+    fclose(out);
+ 
+    FILE *in = fopen(str, "rb");
+ 
+    long int plain[n * 64];
+    int i = -1;
+    char ch;
+ 
+    while (!feof(in))
+    {
+        ch = getc(in);
+        plain[++i] = ch - 48;
+    }
+ 
+    for (int i = 0; i < n; i++) {
+        Encryption(plain + 64 * i);
+    }
+ 
+    fclose(in);
+ 
+}
+ 
+void create16Keys(unsigned int key[])
+{
+    FILE *pt = fopen("key.txt", "rb");
+ 
+    int i = 0, ch;
+ 
+    while (!feof(pt))
+    {
+        ch = getc(pt);
+        key[i++] = ch - 48;
+    }
+ 
+    fclose(pt);
+}
+ 
+long int findFileSize()
+{
+    FILE *inp = fopen("input.txt", "rb");
+    long int size;
+ 
+    if (fseek(inp, 0L, SEEK_END)) {
+        perror("fseek() failed");
+    }
+    // size will contain number of chars in the input file.
+    else {
+        size = ftell(inp);
+    }
+ 
+    fclose(inp);
+ 
+    return size;
+}
+ 
+int main()
+{
+    unsigned int key[192];
+    create16Keys(key);
+ 
+    long int n = findFileSize() / 8;
+    convertCharToBit(n);
+ 
+    key64to48(key);
+    encrypt(n, "1.txt");`
+ 
+    key64to48(key + 64);
+    decrypt(n, "2.txt");`
+ 
+    key64to48(key + 128);
+    encrypt(n, "1.txt");    // convert 1.txt to 2.txt using `K3`
+ 
+    // Decryption starts (reverse of Encryption)
+    // decrypt with `K3`, encrypt with `K2`, then decrypt with `K1`.
+ 
+    key64to48(key + 128);
+    decrypt(n, "2.txt");    // convert 2.txt to 1.txt using `K3`
+ 
+    key64to48(key + 64);
+    encrypt(n, "1.txt");    // convert 1.txt to 2.txt using `K2`
+ 
+    key64to48(key);
+    decrypt(n, "2.txt");    // convert 2.txt to 1.txt using `K1`
+ 
+    return 0;
+}
