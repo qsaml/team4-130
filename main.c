@@ -224,3 +224,225 @@ int ToBits(int value)
     
     i = i + 4;
 }
+ 
+int SBox(int XORtext[])
+{
+    int k = 0;
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 6; j++) {
+            X[i][j] = XORtext[k++];
+        }
+    }
+ 
+    int value;
+    for (int i = 0; i < 8; i++)
+    {
+        value = F1(i);
+        ToBits(value);
+    }
+}
+ 
+int PBox(int pos, int text)
+{
+    int i;
+    for (i = 0; i < 32; i++)
+    {
+        if (P[i] == pos + 1) {
+            break;
+        }
+    }
+    R[i] = text;
+}
+ 
+void cipher(int Round, int mode)
+{
+    for (int i = 0; i < 32; i++) {
+        expansion_function(i, RIGHT[Round - 1][i]);
+    }
+ 
+    for (int i = 0; i < 48; i++)
+    {
+        if (mode == 0) {
+            XORtext[i] = XOR(EXPtext[i], key48bit[Round][i]);
+        }
+        else {
+            XORtext[i] = XOR(EXPtext[i], key48bit[17 - Round][i]);
+        }
+    }
+ 
+    SBox(XORtext);
+ 
+    for (int i = 0; i < 32; i++) {
+        PBox(i, X2[i]);
+    }
+ 
+    for (int i = 0; i < 32; i++) {
+        RIGHT[Round][i] = XOR(LEFT[Round - 1][i], R[i]);
+    }
+}
+ 
+void finalPermutation(int pos, int text)
+{
+    int i;
+    for (i = 0; i < 64; i++)
+    {
+        if (FP[i] == pos + 1) {
+            break;
+        }
+    }
+ 
+    ENCRYPTED[i] = text;
+}
+ 
+void convertToBinary(int n)
+{
+    int k, m;
+    for (int i = 7; i >= 0; i--)
+    {
+        m = 1 << i;
+        k = n & m;
+        if (k == 0) {
+            fprintf(out, "0");
+        }
+        else {
+            fprintf(out, "1");
+        }
+    }
+}
+ 
+int convertCharToBit(long int n)
+{
+    FILE *inp = fopen("input.txt", "rb");
+    out = fopen("1.txt", "wb+");
+    char ch;
+ 
+    int i = n * 8;
+    while (i)
+    {
+        ch = fgetc(inp);
+        if (ch == -1) {
+            break;
+        }
+        i--;
+        convertToBinary(ch);
+    }
+ 
+    fclose(out);
+    fclose(inp);
+}
+ 
+void convertToBits(int ch[])
+{
+    int value = 0;
+    for (int i = 7; i >= 0; i--) {
+        value += (int)pow(2, i) * ch[7 - i];
+    }
+ 
+    fprintf(out, "%c", value);
+}
+ 
+int bittochar()
+{
+    out = fopen("result.txt", "ab+");
+    for (int i = 0; i < 64; i = i + 8) {
+        convertToBits(&ENCRYPTED[i]);
+    }
+    fclose(out);
+}
+ 
+void key56to48(int round, int pos, int text)
+{
+    int i;
+    for (i = 0; i < 56; i++)
+    {
+        if (PC2[i] == pos + 1) {
+            break;
+        }
+    }
+ 
+    key48bit[round][i] = text;
+}
+ 
+int key64to56(int pos, int text)
+{
+    int i;
+    for (i = 0; i < 56; i++)
+    {
+        if (PC1[i] == pos + 1) {
+            break;
+        }
+    }
+ 
+    key56bit[i] = text;
+}
+ 
+void key64to48(unsigned int key[])
+{
+    int k, backup[17][2];
+    int CD[17][56];
+    int C[17][28], D[17][28];
+ 
+    for (int i = 0; i < 64; i++) {
+        key64to56(i, key[i]);
+    }
+ 
+    for (int i = 0; i < 56; i++)
+    {
+        if (i < 28) {
+            C[0][i] = key56bit[i];
+        }
+        else {
+            D[0][i - 28] = key56bit[i];
+        }
+    }
+ 
+    for (int x = 1; x < 17; x++)
+    {
+        int shift = SHIFTS[x - 1];
+ 
+        for (int i = 0; i < shift; i++) {
+            backup[x - 1][i] = C[x - 1][i];
+        }
+ 
+        for (int i = 0; i < (28 - shift); i++) {
+            C[x][i] = C[x - 1][i + shift];
+        }
+ 
+        k = 0;
+        for (int i = 28 - shift; i < 28; i++) {
+            C[x][i] = backup[x - 1][k++];
+        }
+ 
+        for (int i = 0; i < shift; i++) {
+            backup[x - 1][i] = D[x - 1][i];
+        }
+ 
+        for (int i = 0; i < (28 - shift); i++) {
+            D[x][i] = D[x - 1][i + shift];
+        }
+ 
+        k = 0;
+        for (int i = 28 - shift; i < 28; i++) {
+            D[x][i] = backup[x - 1][k++];
+        }
+    }
+ 
+    for (int j = 0; j < 17; j++)
+    {
+        for (int i = 0; i < 28; i++) {
+            CD[j][i] = C[j][i];
+        }
+ 
+        for (int i = 28; i < 56; i++) {
+            CD[j][i] = D[j][i - 28];
+        }
+    }
+ 
+    for (int j = 1; j < 17; j++)
+    {
+        for (int i = 0; i < 56; i++) {
+            key56to48(j, i, CD[j][i]);
+        }
+    }
+}
